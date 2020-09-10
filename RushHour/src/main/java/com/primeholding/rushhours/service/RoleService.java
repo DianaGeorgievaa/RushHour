@@ -5,7 +5,7 @@ import com.primeholding.rushhours.entity.Role;
 import com.primeholding.rushhours.exception.ResourceNotFoundException;
 import com.primeholding.rushhours.mapper.Mapper;
 import com.primeholding.rushhours.repository.RoleRepository;
-import com.primeholding.rushhours.utils.MessageUtils;
+import com.primeholding.rushhours.constants.MessageConstants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -21,10 +21,10 @@ public class RoleService {
         this.roleRepository = roleRepository;
     }
 
-    public RoleDto get(int id) throws ResourceNotFoundException {
+    public RoleDto get(int id) {
         Optional<Role> role = roleRepository.findById(id);
         if (!role.isPresent()) {
-            throw new ResourceNotFoundException(MessageUtils.NOT_EXISTING_ROLE_MESSAGE);
+            throw new ResourceNotFoundException(MessageConstants.NOT_EXISTING_ROLE_MESSAGE);
         }
 
         return Mapper.INSTANCE.roleToRoleDto(role.get());
@@ -43,7 +43,7 @@ public class RoleService {
     public void delete(int id) throws ResourceNotFoundException {
         Optional<Role> role = roleRepository.findById(id);
         if (!role.isPresent()) {
-            throw new ResourceNotFoundException(MessageUtils.NOT_EXISTING_ROLE_MESSAGE);
+            throw new ResourceNotFoundException(MessageConstants.NOT_EXISTING_ROLE_MESSAGE);
         }
 
         roleRepository.deleteById(id);

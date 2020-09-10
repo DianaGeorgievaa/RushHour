@@ -1,8 +1,7 @@
 package com.primeholding.rushhours.controller;
 
+import com.primeholding.rushhours.constants.RushHoursAppConstants;
 import com.primeholding.rushhours.dto.ActivityDto;
-import com.primeholding.rushhours.exception.BadRequestException;
-import com.primeholding.rushhours.exception.ResourceNotFoundException;
 import com.primeholding.rushhours.service.ActivityService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -14,7 +13,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/activities")
+@RequestMapping(RushHoursAppConstants.API_PATH + RushHoursAppConstants.ACTIVITIES_PATH)
 public class ActivityController {
     private ActivityService activityService;
 
@@ -23,9 +22,9 @@ public class ActivityController {
         this.activityService = activityService;
     }
 
-    @GetMapping(value = "/{id}")
+    @GetMapping(value = RushHoursAppConstants.ID_PATH_PARAM)
     @PreAuthorize("hasRole('ROLE_ADMINISTRATOR')")
-    public ResponseEntity<ActivityDto> get(@RequestParam int id) throws ResourceNotFoundException {
+    public ResponseEntity<ActivityDto> get(@PathVariable int id) {
         return new ResponseEntity<>(activityService.get(id), HttpStatus.OK);
     }
 
@@ -36,19 +35,19 @@ public class ActivityController {
 
     @PostMapping
     @PreAuthorize("hasRole('ROLE_ADMINISTRATOR')")
-    public ResponseEntity<ActivityDto> create(@RequestBody ActivityDto activityDto) throws BadRequestException {
+    public ResponseEntity<ActivityDto> create(@RequestBody ActivityDto activityDto) {
         return new ResponseEntity<>(activityService.create(activityDto), HttpStatus.CREATED);
     }
 
-    @PatchMapping(value = "/{id}")
+    @PatchMapping(value = RushHoursAppConstants.ID_PATH_PARAM)
     @PreAuthorize("hasRole('ROLE_ADMINISTRATOR')")
-    public ResponseEntity<ActivityDto> partialUpdate(@RequestParam int id, @RequestBody Map<String, String> updates) throws BadRequestException, ResourceNotFoundException {
+    public ResponseEntity<ActivityDto> partialUpdate(@PathVariable int id, @RequestBody Map<String, String> updates) {
         return new ResponseEntity<>(activityService.partialUpdate(id, updates), HttpStatus.OK);
     }
 
-    @DeleteMapping(value = "/{id}")
+    @DeleteMapping(value = RushHoursAppConstants.ID_PATH_PARAM)
     @PreAuthorize("hasRole('ROLE_ADMINISTRATOR')")
-    public ResponseEntity<Void> delete(@RequestParam int id) throws ResourceNotFoundException {
+    public ResponseEntity<Void> delete(@PathVariable int id) {
         activityService.delete(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }

@@ -1,5 +1,6 @@
 package com.primeholding.rushhours.configuration;
 
+import com.primeholding.rushhours.constants.RushHoursAppConstants;
 import com.primeholding.rushhours.security.CustomUserDetailsService;
 import com.primeholding.rushhours.security.JwtAuthenticationEntryPoint;
 import com.primeholding.rushhours.security.JwtAuthenticationFilter;
@@ -87,9 +88,14 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
                 .authorizeRequests()
-                .antMatchers("/api/auth/signin", "/api/auth/signup")
+                .antMatchers(
+                        RushHoursAppConstants.API_PATH + RushHoursAppConstants.AUTH_PATH + RushHoursAppConstants.SIGN_IN_PATH,
+                        RushHoursAppConstants.API_PATH + RushHoursAppConstants.AUTH_PATH + RushHoursAppConstants.SIGN_UP_PATH)
                 .permitAll()
-                .antMatchers(HttpMethod.GET, "/api/users", "/api/roles","/api/activities")
+                .antMatchers(HttpMethod.GET,
+                        RushHoursAppConstants.API_PATH + RushHoursAppConstants.USERS_PATH,
+                        RushHoursAppConstants.API_PATH + RushHoursAppConstants.ROLES_PATH,
+                        RushHoursAppConstants.ACTIVITIES_PATH)
                 .permitAll()
                 .anyRequest()
                 .authenticated();

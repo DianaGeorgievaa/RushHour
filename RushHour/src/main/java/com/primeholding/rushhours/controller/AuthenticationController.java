@@ -1,12 +1,14 @@
 package com.primeholding.rushhours.controller;
 
+import com.primeholding.rushhours.constants.MessageConstants;
+import com.primeholding.rushhours.constants.RushHoursAppConstants;
 import com.primeholding.rushhours.entity.Role;
 import com.primeholding.rushhours.entity.User;
 
-import com.primeholding.rushhours.payload.ApiResponse;
-import com.primeholding.rushhours.payload.JwtAuthenticationResponse;
-import com.primeholding.rushhours.payload.LoginRequest;
-import com.primeholding.rushhours.payload.SignUpRequest;
+import com.primeholding.rushhours.payload.response.ApiResponse;
+import com.primeholding.rushhours.payload.response.JwtAuthenticationResponse;
+import com.primeholding.rushhours.payload.request.LoginRequest;
+import com.primeholding.rushhours.payload.request.SignUpRequest;
 import com.primeholding.rushhours.security.JwtTokenProvider;
 import com.primeholding.rushhours.service.RoleService;
 import com.primeholding.rushhours.service.UserService;
@@ -29,7 +31,7 @@ import java.net.URI;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping(RushHoursAppConstants.API_PATH + RushHoursAppConstants.AUTH_PATH)
 public class AuthenticationController {
     private AuthenticationManager authenticationManager;
     private UserService userService;
@@ -38,7 +40,10 @@ public class AuthenticationController {
     private JwtTokenProvider tokenProvider;
 
     @Autowired
-    public AuthenticationController(AuthenticationManager authenticationManager, UserService userService, RoleService roleService, PasswordEncoder passwordEncoder, JwtTokenProvider tokenProvider) {
+    public AuthenticationController(AuthenticationManager authenticationManager,
+                                    UserService userService, RoleService roleService,
+                                    PasswordEncoder passwordEncoder,
+                                    JwtTokenProvider tokenProvider) {
         this.authenticationManager = authenticationManager;
         this.userService = userService;
         this.roleService = roleService;
@@ -46,7 +51,7 @@ public class AuthenticationController {
         this.tokenProvider = tokenProvider;
     }
 
-    @PostMapping("/signin")
+    @PostMapping(RushHoursAppConstants.SIGN_IN_PATH)
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
@@ -61,10 +66,10 @@ public class AuthenticationController {
         return ResponseEntity.ok(new JwtAuthenticationResponse(jwt));
     }
 
-    @PostMapping("/signup")
+    @PostMapping(RushHoursAppConstants.SIGN_UP_PATH)
     public ResponseEntity<?> registerUser(@Valid @RequestBody SignUpRequest signUpRequest) {
         if (userService.existsByEmail(signUpRequest.getEmail())) {
-            return new ResponseEntity(new ApiResponse(false, "Email Address already in use!"),
+            return new ResponseEntity(new ApiResponse(false, MessageConstants.ALREADY_EXISTING_EMAIL),
                     HttpStatus.BAD_REQUEST);
         }
 
@@ -78,9 +83,11 @@ public class AuthenticationController {
         User result = userService.save(user);
 
         URI location = ServletUriComponentsBuilder
-                .fromCurrentContextPath().path("/api/users/{email}")
+                .fromCurrentContextPath().path(RushHoursAppConstants.API_PATH
+                        + RushHoursAppConstants.USERS_PATH
+                        + RushHoursAppConstants.EMAIL_PATH_PARAM)
                 .buildAndExpand(result.getEmail()).toUri();
 
-        return ResponseEntity.created(location).body(new ApiResponse(true, "User registered successfully"));
+        return ResponseEntity.created(location).body(new ApiResponse(true, MessageConstants.SUCCESSFUL_REGISTRATION));
     }
 }

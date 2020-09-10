@@ -1,4 +1,4 @@
-package com.primeholding.rushhours.payload;
+package com.primeholding.rushhours.payload.response;
 
 public class ApiResponse {
     private Boolean success;
