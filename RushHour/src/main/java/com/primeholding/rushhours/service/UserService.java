@@ -10,7 +10,7 @@ import com.primeholding.rushhours.mapper.Mapper;
 import com.primeholding.rushhours.model.UserModel;
 import com.primeholding.rushhours.repository.RoleRepository;
 import com.primeholding.rushhours.repository.UserRepository;
-import com.primeholding.rushhours.utils.MessageUtils;
+import com.primeholding.rushhours.constants.MessageConstants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
@@ -31,17 +31,20 @@ public class UserService {
     private AppointmentService appointmentService;
 
     @Autowired
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, RoleRepository roleRepository, AppointmentService appointmentService) {
+    public UserService(UserRepository userRepository,
+                       PasswordEncoder passwordEncoder,
+                       RoleRepository roleRepository,
+                       AppointmentService appointmentService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.roleRepository = roleRepository;
         this.appointmentService = appointmentService;
     }
 
-    public UserModel get(int id) throws ResourceNotFoundException {
+    public UserModel get(int id) {
         Optional<User> user = userRepository.findById(id);
         if (!user.isPresent()) {
-            throw new ResourceNotFoundException(MessageUtils.NOT_EXISTING_USER_MESSAGE);
+            throw new ResourceNotFoundException(MessageConstants.NOT_EXISTING_USER_MESSAGE);
         }
 
         return new UserModel(Mapper.INSTANCE.userToUserDto(user.get()));
@@ -51,9 +54,9 @@ public class UserService {
         return Mapper.INSTANCE.mapListOfUsersToUserDto(userRepository.findAll());
     }
 
-    public UserModel create(UserDto userDto) throws ResourceAlreadyExistsException {
+    public UserModel create(UserDto userDto) {
         if (userRepository.existsByEmail(userDto.getEmail())) {
-            throw new ResourceAlreadyExistsException(MessageUtils.ALREADY_EXISTING_USER_MESSAGE);
+            throw new ResourceAlreadyExistsException(MessageConstants.ALREADY_EXISTING_USER_MESSAGE);
         }
 
         User user = Mapper.INSTANCE.userDtoToUser(userDto);
@@ -61,14 +64,13 @@ public class UserService {
         Optional<Role> role = roleRepository.findById(USER_ROLE_ID);
         user.setRole(role.get());
 
-
         return new UserModel(Mapper.INSTANCE.userToUserDto(userRepository.save(user)));
     }
 
-    public void delete(int id) throws ResourceNotFoundException {
+    public void delete(int id) {
         Optional<User> user = userRepository.findById(id);
         if (!user.isPresent()) {
-            throw new ResourceNotFoundException(MessageUtils.NOT_EXISTING_USER_MESSAGE);
+            throw new ResourceNotFoundException(MessageConstants.NOT_EXISTING_USER_MESSAGE);
         }
 
         appointmentService.findAppointmentsByUserId(id)
@@ -83,15 +85,15 @@ public class UserService {
         userRepository.deleteById(id);
     }
 
-    public UserModel partialUpdate(int id, Map<String, String> updates) throws ResourceNotFoundException, ResourceAlreadyExistsException {
+    public UserModel partialUpdate(int id, Map<String, String> updates) {
         Optional<User> user = userRepository.findById(id);
         if (!user.isPresent()) {
-            throw new ResourceNotFoundException(MessageUtils.NOT_EXISTING_USER_MESSAGE);
+            throw new ResourceNotFoundException(MessageConstants.NOT_EXISTING_USER_MESSAGE);
         }
 
         if (updates.containsKey(EMAIL)) {
             if (userRepository.existsByEmail(updates.get(EMAIL))) {
-                throw new ResourceAlreadyExistsException(MessageUtils.ALREADY_EXISTING_USER_MESSAGE);
+                throw new ResourceAlreadyExistsException(MessageConstants.ALREADY_EXISTING_USER_MESSAGE);
             }
             user.get().setEmail(updates.get(EMAIL));
         }
@@ -103,10 +105,10 @@ public class UserService {
         return new UserModel(Mapper.INSTANCE.userToUserDto(userRepository.save(user.get())));
     }
 
-    public List<AppointmentDto> getAppointmentsByUserId(int id) throws ResourceNotFoundException {
+    public List<AppointmentDto> getAppointmentsByUserId(int id) {
         Optional<User> user = userRepository.findById(id);
         if (!user.isPresent()) {
-            throw new ResourceNotFoundException(MessageUtils.NOT_EXISTING_USER_MESSAGE);
+            throw new ResourceNotFoundException(MessageConstants.NOT_EXISTING_USER_MESSAGE);
         }
 
         return appointmentService.findAppointmentsByUserId(id);

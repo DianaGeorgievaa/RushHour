@@ -1,9 +1,8 @@
 package com.primeholding.rushhours.controller;
 
+import com.primeholding.rushhours.constants.RushHoursAppConstants;
 import com.primeholding.rushhours.dto.AppointmentDto;
 import com.primeholding.rushhours.dto.UserDto;
-import com.primeholding.rushhours.exception.ResourceAlreadyExistsException;
-import com.primeholding.rushhours.exception.ResourceNotFoundException;
 import com.primeholding.rushhours.model.UserModel;
 import com.primeholding.rushhours.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +15,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/users")
+@RequestMapping(RushHoursAppConstants.API_PATH + RushHoursAppConstants.USERS_PATH)
 public class UserController {
     private UserService userService;
 
@@ -25,14 +24,14 @@ public class UserController {
         this.userService = userService;
     }
 
-    @GetMapping(value = "/{id}")
-    public ResponseEntity<UserModel> get(@RequestParam int id) throws ResourceNotFoundException {
+    @GetMapping(value = RushHoursAppConstants.ID_PATH_PARAM)
+    public ResponseEntity<UserModel> get(@PathVariable int id) {
         return new ResponseEntity<>(userService.get(id), HttpStatus.OK);
     }
 
-    @GetMapping(value = "/{id}/appointments")
+    @GetMapping(value = RushHoursAppConstants.ID_PATH_PARAM + RushHoursAppConstants.APPOINTMENTS_PATH)
     @PreAuthorize("hasRole('ROLE_ADMINISTRATOR')")
-    public ResponseEntity<List<AppointmentDto>> getAppointmentsByUserId(@PathVariable int id) throws ResourceNotFoundException {
+    public ResponseEntity<List<AppointmentDto>> getAppointmentsByUserId(@PathVariable int id) {
         return new ResponseEntity<>(userService.getAppointmentsByUserId(id), HttpStatus.OK);
     }
 
@@ -44,19 +43,19 @@ public class UserController {
 
     @PostMapping
     @PreAuthorize("hasRole('ROLE_ADMINISTRATOR')")
-    public ResponseEntity<UserModel> create(@RequestBody UserDto userDto) throws ResourceAlreadyExistsException {
+    public ResponseEntity<UserModel> create(@RequestBody UserDto userDto) {
         return new ResponseEntity<>(userService.create(userDto), HttpStatus.CREATED);
     }
 
-    @PatchMapping(value = "/{id}")
+    @PatchMapping(value = RushHoursAppConstants.ID_PATH_PARAM)
     @PreAuthorize("hasRole('ROLE_ADMINISTRATOR')")
-    public ResponseEntity<UserModel> partialUpdate(@RequestParam int id, @RequestBody Map<String, String> updates) throws ResourceNotFoundException, ResourceAlreadyExistsException {
+    public ResponseEntity<UserModel> partialUpdate(@PathVariable int id, @RequestBody Map<String, String> updates) {
         return new ResponseEntity<>(userService.partialUpdate(id, updates), HttpStatus.OK);
     }
 
-    @DeleteMapping(value = "/{id}")
+    @DeleteMapping(value = RushHoursAppConstants.ID_PATH_PARAM)
     @PreAuthorize("hasRole('ROLE_ADMINISTRATOR')")
-    public ResponseEntity<Void> delete(@RequestParam int id) throws ResourceNotFoundException {
+    public ResponseEntity<Void> delete(@PathVariable int id) {
         userService.delete(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }

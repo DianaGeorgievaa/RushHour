@@ -9,7 +9,7 @@ import com.primeholding.rushhours.exception.ResourceNotFoundException;
 import com.primeholding.rushhours.mapper.Mapper;
 import com.primeholding.rushhours.repository.ActivityRepository;
 import com.primeholding.rushhours.repository.AppointmentRepository;
-import com.primeholding.rushhours.utils.MessageUtils;
+import com.primeholding.rushhours.constants.MessageConstants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -35,10 +35,10 @@ public class ActivityService {
         this.appointmentRepository = appointmentRepository;
     }
 
-    public ActivityDto get(int id) throws ResourceNotFoundException {
+    public ActivityDto get(int id) {
         Optional<Activity> activity = activityRepository.findById(id);
         if (!activity.isPresent()) {
-            throw new ResourceNotFoundException(MessageUtils.NOT_EXISTING_ACTIVITY_MESSAGE);
+            throw new ResourceNotFoundException(MessageConstants.NOT_EXISTING_ACTIVITY_MESSAGE);
         }
 
         return Mapper.INSTANCE.activityToActivityDto(activity.get());
@@ -48,9 +48,9 @@ public class ActivityService {
         return Mapper.INSTANCE.mapListOfActivitiesToActivitiesDto(activityRepository.findAll());
     }
 
-    public ActivityDto create(ActivityDto activityDto) throws BadRequestException {
+    public ActivityDto create(ActivityDto activityDto) {
         if (activityDto.getDuration() <= 0 || activityDto.getPrice() <= 0) {
-            throw new BadRequestException(MessageUtils.NEGATIVE_PRICE_AND_DURATION_MESSAGE);
+            throw new BadRequestException(MessageConstants.NEGATIVE_PRICE_AND_DURATION_MESSAGE);
         }
 
         Activity activity = Mapper.INSTANCE.activityDtoToActivity(activityDto);
@@ -58,10 +58,10 @@ public class ActivityService {
         return Mapper.INSTANCE.activityToActivityDto(activityRepository.save(activity));
     }
 
-    public void delete(int id) throws ResourceNotFoundException {
+    public void delete(int id) {
         Optional<Activity> activity = activityRepository.findById(id);
         if (!activity.isPresent()) {
-            throw new ResourceNotFoundException(MessageUtils.NOT_EXISTING_ACTIVITY_MESSAGE);
+            throw new ResourceNotFoundException(MessageConstants.NOT_EXISTING_ACTIVITY_MESSAGE);
         }
 
         for (Appointment appointment : activity.get().getAppointments()) {
@@ -79,10 +79,10 @@ public class ActivityService {
         }
     }
 
-    public ActivityDto partialUpdate(int id, Map<String, String> updates) throws BadRequestException, ResourceNotFoundException {
+    public ActivityDto partialUpdate(int id, Map<String, String> updates) {
         Optional<Activity> activity = activityRepository.findById(id);
         if (!activity.isPresent()) {
-            throw new ResourceNotFoundException(MessageUtils.NOT_EXISTING_ACTIVITY_MESSAGE);
+            throw new ResourceNotFoundException(MessageConstants.NOT_EXISTING_ACTIVITY_MESSAGE);
         }
 
         updatePrice(id, updates);
@@ -141,21 +141,21 @@ public class ActivityService {
         return appointments;
     }
 
-    private void updatePrice(int id, Map<String, String> updates) throws BadRequestException {
+    private void updatePrice(int id, Map<String, String> updates) {
         Optional<Activity> activity = activityRepository.findById(id);
         if (updates.containsKey(PRICE)) {
             if (Double.parseDouble(updates.get(PRICE)) <= 0) {
-                throw new BadRequestException(MessageUtils.NEGATIVE_PRICE_MESSAGE);
+                throw new BadRequestException(MessageConstants.NEGATIVE_PRICE_MESSAGE);
             }
             activity.get().setPrice(Double.parseDouble(updates.get(PRICE)));
         }
     }
 
-    private void updateDuration(int id, Map<String, String> updates) throws BadRequestException {
+    private void updateDuration(int id, Map<String, String> updates) {
         Optional<Activity> activity = activityRepository.findById(id);
         if (updates.containsKey(DURATION)) {
             if (Integer.parseInt(updates.get(DURATION)) <= 0) {
-                throw new BadRequestException(MessageUtils.NEGATIVE_DURATION_MESSAGE);
+                throw new BadRequestException(MessageConstants.NEGATIVE_DURATION_MESSAGE);
             }
 
             double oldDuration = activity.get().getDuration();
@@ -175,7 +175,7 @@ public class ActivityService {
                 }
 
                 if (isOverlapped(appointment.getId(), appointment)) {
-                    throw new BadRequestException(MessageUtils.APPOINTMENTS_OVERLAPPING_MESSAGE);
+                    throw new BadRequestException(MessageConstants.APPOINTMENTS_OVERLAPPING_MESSAGE);
                 }
                 appointmentRepository.save(appointment);
             }

@@ -12,7 +12,7 @@ import com.primeholding.rushhours.repository.ActivityRepository;
 import com.primeholding.rushhours.repository.AppointmentRepository;
 import com.primeholding.rushhours.repository.UserRepository;
 import com.primeholding.rushhours.security.UserPrincipal;
-import com.primeholding.rushhours.utils.MessageUtils;
+import com.primeholding.rushhours.constants.MessageConstants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -32,15 +32,17 @@ public class AppointmentService {
     private UserRepository userRepository;
 
     @Autowired
-    public AppointmentService(AppointmentRepository appointmentRepository, ActivityRepository activityRepository, UserRepository userRepository) {
+    public AppointmentService(AppointmentRepository appointmentRepository,
+                              ActivityRepository activityRepository,
+                              UserRepository userRepository) {
         this.appointmentRepository = appointmentRepository;
         this.activityRepository = activityRepository;
         this.userRepository = userRepository;
     }
 
-    public AppointmentDto get(int id) throws ResourceNotFoundException {
+    public AppointmentDto get(int id) {
         if (!appointmentRepository.findById(id).isPresent()) {
-            throw new ResourceNotFoundException(MessageUtils.NOT_EXISTING_APPOINTMENT_MESSAGE);
+            throw new ResourceNotFoundException(MessageConstants.NOT_EXISTING_APPOINTMENT_MESSAGE);
         }
 
         return Mapper.INSTANCE.mapAppointmentToAppointmentDto(appointmentRepository.findById(id).get());
@@ -48,19 +50,17 @@ public class AppointmentService {
 
 
     public List<AppointmentDto> get() {
-
         return Mapper.INSTANCE.mapListOfAppointmentsToAppointmentsDto(appointmentRepository.findAll());
     }
 
-    public AppointmentDto create(AppointmentDto appointmentDto) throws BadRequestException, ResourceNotFoundException {
+    public AppointmentDto create(AppointmentDto appointmentDto) {
         List<Integer> activitiesId = appointmentDto.getActivitiesId();
-
         if (appointmentDto.getStartDate().isBefore(LocalDateTime.now())) {
-            throw new BadRequestException(MessageUtils.PAST_START_DATE_MESSAGE);
+            throw new BadRequestException(MessageConstants.PAST_START_DATE_MESSAGE);
         }
 
         if (activitiesId.isEmpty()) {
-            throw new BadRequestException(MessageUtils.EMPTY_ACTIVITY_LIST_MESSAGE);
+            throw new BadRequestException(MessageConstants.EMPTY_ACTIVITY_LIST_MESSAGE);
         }
 
         List<Activity> activities = new ArrayList<>();
@@ -68,7 +68,7 @@ public class AppointmentService {
         for (int id : activitiesId) {
             currentActivity = activityRepository.findById(id);
             if (!currentActivity.isPresent()) {
-                throw new ResourceNotFoundException(MessageUtils.NOT_EXISTING_ACTIVITY_MESSAGE);
+                throw new ResourceNotFoundException(MessageConstants.NOT_EXISTING_ACTIVITY_MESSAGE);
             }
             activities.add(currentActivity.get());
         }
@@ -79,7 +79,7 @@ public class AppointmentService {
             user = userRepository.findById(appointmentDto.getUserId());
 
             if (!user.isPresent()) {
-                throw new ResourceNotFoundException(MessageUtils.NOT_EXISTING_USER_MESSAGE);
+                throw new ResourceNotFoundException(MessageConstants.NOT_EXISTING_USER_MESSAGE);
             }
             appointmentDto.setUserId(appointmentDto.getUserId());
 
@@ -92,25 +92,25 @@ public class AppointmentService {
         appointment.updateEndDate();
         List<Appointment> allAppointments = appointmentRepository.findAll();
         if (isOverlapped(appointment, allAppointments)) {
-            throw new BadRequestException(MessageUtils.APPOINTMENTS_OVERLAPPING_MESSAGE);
+            throw new BadRequestException(MessageConstants.APPOINTMENTS_OVERLAPPING_MESSAGE);
         }
 
         return Mapper.INSTANCE.mapAppointmentToAppointmentDto(appointmentRepository.save(appointment));
     }
 
-    public void delete(int id) throws ResourceNotFoundException {
+    public void delete(int id) {
         Optional<Appointment> appointment = appointmentRepository.findById(id);
         if (!appointment.isPresent()) {
-            throw new ResourceNotFoundException(MessageUtils.NOT_EXISTING_APPOINTMENT_MESSAGE);
+            throw new ResourceNotFoundException(MessageConstants.NOT_EXISTING_APPOINTMENT_MESSAGE);
         }
 
         appointmentRepository.deleteById(id);
     }
 
-    public List<ActivityDto> getActivitiesByAppointmentId(int id) throws ResourceNotFoundException {
+    public List<ActivityDto> getActivitiesByAppointmentId(int id) {
         Optional<Appointment> appointment = appointmentRepository.findById(id);
         if (!appointment.isPresent()) {
-            throw new ResourceNotFoundException(MessageUtils.NOT_EXISTING_APPOINTMENT_MESSAGE);
+            throw new ResourceNotFoundException(MessageConstants.NOT_EXISTING_APPOINTMENT_MESSAGE);
         }
 
         List<Activity> activities = appointment.get().getActivities();
@@ -124,15 +124,15 @@ public class AppointmentService {
         return Mapper.INSTANCE.mapListOfAppointmentsToAppointmentsDto(appointments);
     }
 
-    public AppointmentDto partialUpdate(int id, Map<String, String> updates) throws BadRequestException, ResourceNotFoundException {
+    public AppointmentDto partialUpdate(int id, Map<String, String> updates) {
         Optional<Appointment> appointment = appointmentRepository.findById(id);
         if (!appointment.isPresent()) {
-            throw new ResourceNotFoundException(MessageUtils.NOT_EXISTING_APPOINTMENT_MESSAGE);
+            throw new ResourceNotFoundException(MessageConstants.NOT_EXISTING_APPOINTMENT_MESSAGE);
         }
 
         String startDate = updates.get("startDate");
         if (LocalDateTime.parse(startDate).isBefore(LocalDateTime.now())) {
-            throw new BadRequestException(MessageUtils.PAST_START_DATE_MESSAGE);
+            throw new BadRequestException(MessageConstants.PAST_START_DATE_MESSAGE);
         }
 
         List<Appointment> appointmentsWithoutTheCurrent = getAllAppointmentsWithoutSpecificOne(id);
@@ -140,7 +140,7 @@ public class AppointmentService {
         appointment.get().updateEndDate();
 
         if (isOverlapped(appointment.get(), appointmentsWithoutTheCurrent)) {
-            throw new BadRequestException(MessageUtils.APPOINTMENTS_OVERLAPPING_MESSAGE);
+            throw new BadRequestException(MessageConstants.APPOINTMENTS_OVERLAPPING_MESSAGE);
         }
 
         return Mapper.INSTANCE.mapAppointmentToAppointmentDto(appointmentRepository.save(appointment.get()));
@@ -169,7 +169,6 @@ public class AppointmentService {
 
     private int getCurrentUserId() {
         UserPrincipal principal = (UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
         return principal.getId();
     }
 

@@ -1,4 +1,4 @@
-package com.primeholding.rushhours.payload;
+package com.primeholding.rushhours.payload.request;
 
 import javax.validation.constraints.NotBlank;
 
